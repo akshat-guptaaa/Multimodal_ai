@@ -10,7 +10,7 @@ from config import (
 from core.image_utils import process_and_encode_image
 from core.multimodal_client import MultimodalClient
 
-st.set_page_config(page_title="Multimodal AI Chatbot", page_icon="👁️", layout="centered")
+st.set_page_config(page_title="Multimodal AI Chatbot", layout="centered")
 
 
 if "messages" not in st.session_state:
@@ -48,7 +48,7 @@ def render_message(msg):
             st.image(uri, width=250)
 
 with st.sidebar:
-    st.title("⚙️ Configuration")
+    st.title("Configuration")
 
     api_key = OPENAI_KEY
 
