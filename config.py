@@ -1,9 +1,21 @@
 import os
+import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENAI_KEY = os.getenv("OPENAI_KEY", "")
+def get_secret(name, default=""):
+    value = os.getenv(name, "").strip()
+    if value:
+        return value
+
+    try:
+        return str(st.secrets.get(name, default)).strip()
+    except Exception:
+        return default
+
+OPENAI_KEY = get_secret("OPENAI_KEY")
+
 
 AVAILABLE_MODELS = {
     "GPT6 Luna": {
