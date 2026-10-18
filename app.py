@@ -13,40 +13,84 @@ from core.multimodal_client import MultimodalClient
 st.set_page_config(page_title="Multimodal AI Chatbot", page_icon="👁️", layout="centered")
 
 
-# Hide Streamlit's default toolbar, footer and header
+
+# Hide Streamlit's default UI elements
 st.markdown(
     """
     <style>
-        /* Hide the top-right toolbar, including Fork and GitHub */
-        [data-testid="stToolbar"] {
-            visibility: hidden;
-            height: 0%;
-            position: fixed;
+        /* Hide top header and toolbar */
+        [data-testid="stHeader"],
+        [data-testid="stToolbar"],
+        [data-testid="stDecoration"] {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
         }
 
-        /* Hide the footer */
-        footer {
-            visibility: hidden;
-        }
-
-        /* Hide Streamlit's header */
-        [data-testid="stHeader"] {
-            background: rgba(0, 0, 0, 0);
-        }
-
-        /* Hide the bottom-right status/decoration area */
-        [data-testid="stStatusWidget"] {
-            visibility: hidden;
-        }
-
-        /* Hide deploy button, if present */
+        /* Hide Fork, GitHub and deploy controls */
+        [data-testid="stAppDeployButton"],
         .stDeployButton {
-            display: none;
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Hide bottom footer and status/profile widget */
+        footer,
+        [data-testid="stStatusWidget"],
+        [data-testid="stBottom"] {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Remove header/footer reserved space */
+        .stAppViewBlockContainer {
+            padding-top: 1rem;
+        }
+
+        /* Hide the main menu if present */
+        #MainMenu {
+            display: none !important;
         }
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+
+# # Hide Streamlit's default toolbar, footer and header
+# st.markdown(
+#     """
+#     <style>
+#         /* Hide the top-right toolbar, including Fork and GitHub */
+#         [data-testid="stToolbar"] {
+#             visibility: hidden;
+#             height: 0%;
+#             position: fixed;
+#         }
+
+#         /* Hide the footer */
+#         footer {
+#             visibility: hidden;
+#         }
+
+#         /* Hide Streamlit's header */
+#         [data-testid="stHeader"] {
+#             background: rgba(0, 0, 0, 0);
+#         }
+
+#         /* Hide the bottom-right status/decoration area */
+#         [data-testid="stStatusWidget"] {
+#             visibility: hidden;
+#         }
+
+#         /* Hide deploy button, if present */
+#         .stDeployButton {
+#             display: none;
+#         }
+#     </style>
+#     """,
+#     unsafe_allow_html=True,
+# )
 
 
 if "messages" not in st.session_state:
