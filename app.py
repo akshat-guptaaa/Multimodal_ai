@@ -14,42 +14,41 @@ st.set_page_config(page_title="Multimodal AI Chatbot", page_icon="👁️", layo
 
 
 
-# Hide Streamlit's default UI elements
 st.markdown(
     """
     <style>
-        /* Hide top header and toolbar */
-        [data-testid="stHeader"],
-        [data-testid="stToolbar"],
+        /* Hide the top toolbar */
+        [data-testid="stToolbar"] {
+            display: none !important;
+        }
+
+        /* Hide the header decoration */
         [data-testid="stDecoration"] {
             display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
         }
 
-        /* Hide Fork, GitHub and deploy controls */
-        [data-testid="stAppDeployButton"],
-        .stDeployButton {
+        /* Hide Streamlit footer and bottom branding */
+        footer {
+            display: none !important;
+        }
+
+        [data-testid="stStatusWidget"] {
+            display: none !important;
+        }
+
+        /* Hide the bottom-right deploy button */
+        [data-testid="stAppDeployButton"] {
+            display: none !important;
+        }
+
+        /* Hide the bottom app creator/branding area */
+        .viewerBadge_container__1QSob,
+        .styles_viewerBadge__1yB5q,
+        .viewerBadge_link__1S137,
+        [class*="viewerBadge"],
+        [class*="ViewerBadge"] {
             display: none !important;
             visibility: hidden !important;
-        }
-
-        /* Hide bottom footer and status/profile widget */
-        footer,
-        [data-testid="stStatusWidget"],
-        [data-testid="stBottom"] {
-            display: none !important;
-            visibility: hidden !important;
-        }
-
-        /* Remove header/footer reserved space */
-        .stAppViewBlockContainer {
-            padding-top: 1rem;
-        }
-
-        /* Hide the main menu if present */
-        #MainMenu {
-            display: none !important;
         }
     </style>
     """,
