@@ -1,4 +1,8 @@
 import streamlit as st
+import hmac
+from collections import deque
+from datetime import datetime
+from threading import Lock
 
 from config import (
     AVAILABLE_MODELS,
@@ -12,22 +16,79 @@ from core.multimodal_client import MultimodalClient
 
 st.set_page_config(page_title="Multimodal AI Chatbot", layout="centered")
 
+@st.cache_resource
+def get_live_monitor():
+    return {"events": deque(maxlen=200), "lock": Lock()}
+
+
+monitor = get_live_monitor()
+
+
+def log_event(event_type, model, text):
+    with monitor["lock"]:
+        monitor["events"].append({
+            "time": datetime.now().strftime("%H:%M:%S"),
+            "type": event_type,
+            "model": model,
+            "text": text,
+        })
+
+if st.query_params.get("admin") == "1":
+    st.title("YantraCode — Live Chat Monitor")
+
+    expected_password = st.secrets.get("ADMIN_PASSWORD", "")
+
+    if not expected_password:
+        st.error("ADMIN_PASSWORD is missing from Streamlit Secrets.")
+        st.stop()
+
+    password = st.text_input("Admin password", type="password")
+
+    if not hmac.compare_digest(password, expected_password):
+        st.info("Enter your admin password to continue.")
+        st.stop()
+
+    @st.fragment(run_every="2s")
+    def live_monitor():
+        with monitor["lock"]:
+            events = list(monitor["events"])
+
+        if not events:
+            st.info("Waiting for chat activity...")
+            return
+
+        for event in reversed(events):
+            with st.container(border=True):
+                st.caption(
+                    f'{event["time"]} · {event["type"]} · {event["model"]}'
+                )
+                st.write(event["text"])
+
+    live_monitor()
+    st.stop()
+
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
 def parse_chat_input(value):
+    """st.chat_input returns a plain str for text-only input,
+    and a dict-like object with 'text' and 'files' when file upload is enabled."""
     if isinstance(value, str):
         return value.strip(), []
     return (value.get("text") or "").strip(), list(value.get("files") or [])
 
+
 def build_api_messages(history, supports_vision):
+    """Convert UI history into the OpenAI-style messages list for the chosen model."""
     window = history[-MAX_HISTORY_MESSAGES:]
-    while window and window[0]["role"] == "assistant":  # never start on a reply
+    while window and window[0]["role"] == "assistant":  
         window = window[1:]
 
     messages = []
     for msg in window:
+
         images = msg["images"] if supports_vision else []
 
         if images:
@@ -40,12 +101,14 @@ def build_api_messages(history, supports_vision):
             messages.append({"role": msg["role"], "content": content})
     return messages
 
+
 def render_message(msg):
     with st.chat_message(msg["role"]):
         if msg["text"]:
             st.markdown(msg["text"])
         for uri in msg["images"]:
             st.image(uri, width=250)
+
 
 with st.sidebar:
     st.title("Configuration")
@@ -58,7 +121,7 @@ with st.sidebar:
     temperature = st.slider("Temperature", 0.0, 2.0, 0.7, 0.1)
 
     st.divider()
-    if st.button("🗑️ Clear Chat", use_container_width=True):
+    if st.button("Clear Chat", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
@@ -100,9 +163,16 @@ if user_input:
     except ValueError as e:
         st.error(f"Image processing error: {e}")
         st.stop()
+
     user_msg = {"role": "user", "text": prompt_text, "images": images}
     render_message(user_msg)
-    
+
+    log_event(
+        "Question",
+        selected_model_name,
+        prompt_text or "[Image uploaded]"
+    )
+
     api_messages = build_api_messages(
         st.session_state.messages + [user_msg], supports_vision
     )
@@ -119,6 +189,7 @@ if user_input:
         except Exception as e:
             st.error(f"API Error: {e}. Your message was not saved, please resend.")
         else:
+            log_event("AI Response", selected_model_name, str(answer))
             st.session_state.messages.append(user_msg)
             st.session_state.messages.append(
                 {"role": "assistant", "text": answer, "images": []}
