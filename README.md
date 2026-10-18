@@ -182,5 +182,5 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 
 <div align="center">
 Built and maintained by <a href="https://github.com/yantracode-ai">YantraCode</a>
-Authored By: Akshat Gupta
+<br>Authored By: Akshat Gupta
 </div>
